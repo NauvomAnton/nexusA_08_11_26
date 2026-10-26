@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+msg_file="$1"
+header=$(head -n1 "$msg_file")
+
+# merge- и revert-коммиты не проверяем
+[[ "$header" =~ ^(Merge|Revert) ]] && exit 0
+
+# номер задачи из имени ветки
+branch=$(git rev-parse --abbrev-ref HEAD)
+task=$(grep -oE '[BF]-[0-9]+' <<<"$branch" | head -n1)
+
+# если номера в заголовке нет, дописываем из ветки
+if [[ ! "$header" =~ \([BF]-[0-9]+\)$ && -n "$task" ]]; then
+  header="$header ($task)"
+  { echo "$header"; tail -n +2 "$msg_file"; } > "$msg_file.tmp" && mv "$msg_file.tmp" "$msg_file"
+fi
+
+pattern='^(feat|fix|refactor|test|chore|docs|ci|perf)(\([a-z0-9-]+\))?!?: [^A-Z].* \([BF]-[0-9]+\)$'
+if [[ ! "$header" =~ $pattern ]]; then
+  echo "✖ Неверный заголовок коммита: $header"
+  echo "  Нужно так: feat(server): add healthz endpoint (B-1)"
+  exit 1
+fi
+
+if (( ${#header} > 80 )); then
+  echo "✖ Заголовок длиннее 80 символов (${#header})"
+  exit 1
+fi
