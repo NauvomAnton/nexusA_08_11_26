@@ -8,6 +8,7 @@ import (
 	"syscall"
 )
 
+// Запуск сервиса
 func run(ctx context.Context) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()

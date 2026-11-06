@@ -1,0 +1,19 @@
+# IDE
+.idea/
+.vscode/
+
+# секреты
+.env
+*.env.local
+
+# сборка
+/backend/bin/
+*.out
+coverage.*
+
+# фронт (на будущее)
+node_modules/
+dist/
+
+# мусор ОС
+.DS_Store
