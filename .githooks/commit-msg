@@ -1,24 +1,36 @@
 #!/usr/bin/env bash
+# Проверка формата коммитов Nexus.
+#
+# Номер задачи берётся из имени ветки и дописывается в конец заголовка:
+#   ветка 4-probes или feat/4-probes  ->  feat(health): add probes (#4)
+#   (старый формат тоже понимается: feat/B-1-...  ->  (B-1))
 msg_file="$1"
 header=$(head -n1 "$msg_file")
 
-# merge- и revert-коммиты не проверяем
-[[ "$header" =~ ^(Merge|Revert) ]] && exit 0
+# merge, revert и автосквош-коммиты не проверяем
+[[ "$header" =~ ^(Merge|Revert|fixup!|squash!) ]] && exit 0
 
-# номер задачи из имени ветки
-branch=$(git rev-parse --abbrev-ref HEAD)
-task=$(grep -oE '[BF]-[0-9]+' <<<"$branch" | head -n1)
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --abbrev-ref HEAD)
 
-# если номера в заголовке нет, дописываем из ветки
-if [[ ! "$header" =~ \([BF]-[0-9]+\)$ && -n "$task" ]]; then
+# 1) номер задачи GitHub: число в начале имени ветки или сразу после префикса "что-то/"
+task=$(grep -oE '(^|/)[0-9]+(-|$)' <<<"$branch" | head -n1 | grep -oE '[0-9]+')
+[[ -n "$task" ]] && task="#$task"
+# 2) старый формат B-1 / F-2
+[[ -z "$task" ]] && task=$(grep -oE '[BF]-[0-9]+' <<<"$branch" | head -n1)
+
+key_re='\((#[0-9]+|[BF]-[0-9]+)\)$'
+
+# если номера в заголовке нет — дописываем из ветки
+if [[ ! "$header" =~ $key_re && -n "$task" ]]; then
   header="$header ($task)"
   { echo "$header"; tail -n +2 "$msg_file"; } > "$msg_file.tmp" && mv "$msg_file.tmp" "$msg_file"
 fi
 
-pattern='^(feat|fix|refactor|test|chore|docs|ci|perf)(\([a-z0-9-]+\))?!?: [^A-Z].* \([BF]-[0-9]+\)$'
+pattern='^(feat|fix|refactor|test|chore|docs|ci|perf)(\([a-z0-9-]+\))?!?: [^A-Z].* \((#[0-9]+|[BF]-[0-9]+)\)$'
 if [[ ! "$header" =~ $pattern ]]; then
   echo "✖ Неверный заголовок коммита: $header"
-  echo "  Нужно так: feat(server): add healthz endpoint (B-1)"
+  echo "  Нужно так: feat(health): add liveness probe (#4)"
+  echo "  Номер берётся из ветки: 4-probes или feat/4-probes"
   exit 1
 fi
 
