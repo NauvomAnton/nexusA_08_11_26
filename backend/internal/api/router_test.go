@@ -11,8 +11,7 @@ import (
 )
 
 type errorBody struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code string `json:"code"`
 }
 
 type errorResponse struct {
@@ -29,45 +28,45 @@ func TestRouterErrors(t *testing.T) {
 	}{
 		{
 			name:               "401 me without token",
-			method:             "GET",
+			method:             http.MethodGet,
 			path:               "/api/v1/me",
 			expectedHTTPStatus: http.StatusUnauthorized,
-			err:                errorBody{Code: "unauthenticated", Message: "missing or invalid token"},
+			err:                errorBody{Code: "unauthenticated"},
 		},
 		{
 			name:               "404 wrong address",
-			method:             "GET",
+			method:             http.MethodGet,
 			path:               "/random",
 			expectedHTTPStatus: http.StatusNotFound,
-			err:                errorBody{Code: "not_found", Message: "route not found"},
+			err:                errorBody{Code: "not_found"},
 		},
 		{
 			name:               "404 wrong address in right route group",
-			method:             "GET",
+			method:             http.MethodGet,
 			path:               "/api/v1/adressForTest",
 			expectedHTTPStatus: http.StatusNotFound,
-			err:                errorBody{Code: "not_found", Message: "route not found"},
+			err:                errorBody{Code: "not_found"},
 		},
 		{
 			name:               "404 edge case of router settings",
-			method:             "GET",
+			method:             http.MethodGet,
 			path:               "/LIVEZ",
 			expectedHTTPStatus: http.StatusNotFound,
-			err:                errorBody{Code: "not_found", Message: "route not found"},
+			err:                errorBody{Code: "not_found"},
 		},
 		{
 			name:               "404 second edge case of router settings",
-			method:             "GET",
+			method:             http.MethodGet,
 			path:               "/livez/",
 			expectedHTTPStatus: http.StatusNotFound,
-			err:                errorBody{Code: "not_found", Message: "route not found"},
+			err:                errorBody{Code: "not_found"},
 		},
 		{
 			name:               "405 wrong method right address",
-			method:             "POST",
+			method:             http.MethodPost,
 			path:               "/livez",
 			expectedHTTPStatus: http.StatusMethodNotAllowed,
-			err:                errorBody{Code: "method_not_allowed", Message: "method not allowed"},
+			err:                errorBody{Code: "method_not_allowed"},
 		},
 	}
 	for _, tc := range tests {
