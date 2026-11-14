@@ -99,3 +99,21 @@ func TestRouterErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestMeSetsWWWAuthenticate(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/me", nil)
+	rec := httptest.NewRecorder()
+
+	h := health.New()
+	r, err := api.NewRouter(api.Dependencies{Health: h})
+
+	if err != nil {
+		t.Fatalf("error: got %v, want %v", err, nil)
+	}
+	r.ServeHTTP(rec, req)
+
+	hint := "Bearer"
+	if auth := rec.Header().Get("WWW-Authenticate"); auth != hint {
+		t.Errorf("WWW-Authenticate: got %q, want %q", auth, hint)
+	}
+}
