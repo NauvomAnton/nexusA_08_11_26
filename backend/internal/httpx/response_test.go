@@ -18,6 +18,29 @@ type errorResponse struct {
 	Error errorBody `json:"error"`
 }
 
+func TestWriteJSON(t *testing.T) {
+	rec := httptest.NewRecorder()
+
+	httpx.WriteJSON(rec, http.StatusOK, map[string]string{"status": "ok"})
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("httpStatus: got %d, want %d", rec.Code, http.StatusOK)
+	}
+
+	if ct := rec.Header().Get("Content-Type"); ct != "application/json" {
+		t.Errorf("content-type: got %q, want %q", ct, "application/json")
+	}
+
+	var body map[string]string
+	if err := json.NewDecoder(rec.Body).Decode(&body); err != nil {
+		t.Fatalf("decode body: %v", err)
+	}
+
+	if body["status"] != "ok" {
+		t.Errorf("status: got %q, want %q", body["status"], "ok")
+	}
+}
+
 func TestWriteError(t *testing.T) {
 	rec := httptest.NewRecorder()
 	testHTTPStatus := http.StatusTeapot
