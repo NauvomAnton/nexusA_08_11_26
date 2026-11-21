@@ -2,7 +2,6 @@ package api_test
 
 import (
 	"errors"
-	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +12,7 @@ import (
 )
 
 func TestNewRouterRequiresHealth(t *testing.T) {
-	handler, err := api.NewRouter(api.Dependencies{Health: nil, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	handler, err := api.NewRouter(api.Dependencies{Health: nil, Logger: slog.New(slog.DiscardHandler)})
 
 	if !errors.Is(err, api.ErrHealthRequired) {
 		t.Errorf("error: got %v, want %v", err, api.ErrHealthRequired)
@@ -67,8 +66,7 @@ func TestProbesAreRouted(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			h := health.New()
 			h.SetReady(tc.isReady)
-			r, err := api.NewRouter(api.Dependencies{Health: h, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
-
+			r, err := api.NewRouter(api.Dependencies{Health: h, Logger: slog.New(slog.DiscardHandler)})
 			if err != nil {
 				t.Fatalf("error: got %v, want %v", err, nil)
 			}
@@ -81,7 +79,6 @@ func TestProbesAreRouted(t *testing.T) {
 			if rec.Code != tc.expectedHTTPStatus {
 				t.Errorf("http status: got %d, want %d", rec.Code, tc.expectedHTTPStatus)
 			}
-
 		})
 	}
 }

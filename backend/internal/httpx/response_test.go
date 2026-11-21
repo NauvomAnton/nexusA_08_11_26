@@ -53,7 +53,6 @@ func TestWriteError(t *testing.T) {
 
 	var errResponse errorResponse
 	err := json.NewDecoder(rec.Body).Decode(&errResponse)
-
 	if err != nil {
 		t.Fatalf("error: got %v, want %v", err, nil)
 	}
@@ -89,7 +88,6 @@ func TestWriteJSONEncodeFailure(t *testing.T) {
 
 	var errResponse errorResponse
 	err := json.NewDecoder(rec.Body).Decode(&errResponse)
-
 	if err != nil {
 		t.Fatalf("error: got %v, want %v", err, nil)
 	}
