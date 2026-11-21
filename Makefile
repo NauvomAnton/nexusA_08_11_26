@@ -1,5 +1,5 @@
 # Nexus — единая точка входа для локальной разработки.
-# `make check` повторяет то, что проверяет CI (.github/workflows/ci.yml).
+# `make check` — единая проверка кода, одинаковая на машинах всех разработчиков.
 
 BACKEND_DIR          := backend
 GOLANGCI_LINT_VERSION := v2.15.0
